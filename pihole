@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole
+    network_mode: host
+    environment:
+      TZ: 'Asia/Colombo'
+      WEBPASSWORD: '@Nishara.me12'
+      FTLCONF_LOCAL_IPV4: '192.168.1.174'
+      PIHOLE_DNS_: '1.1.1.1;1.0.0.1'
+      DNSMASQ_LISTENING: 'all'
+      FTLCONF_dns_listeningMode: 'all'
+      FTLCONF_webserver_port: '8080o,8443os,[::]:8080o,[::]:8443os'
+      WEB_PORT: 8443
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN

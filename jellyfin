@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    user: 1000:1000  # Replace with your user ID (run 'id -u' and 'id -g')
+    network_mode: host
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - ~/media:/media:ro
+      - /home/stoxmod/media/movies:/Movies:ro
+    restart: unless-stopped
+    environment:
+      - JELLYFIN_PublishedServerUrl=http://192.168.1.174  # Replace with your Pi's IP
+    devices:
+      - /dev/dri:/dev/dri  # Hardware acceleration (Pi 5 has VideoCore VII)
