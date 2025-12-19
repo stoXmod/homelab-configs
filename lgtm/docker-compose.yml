@@ -9,7 +9,7 @@ services:
       - "3000:3000"   # Grafana UI
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
-      - "9090:9090"   # Prometheus
+      - "9092:9090"   # Prometheus
       - "3100:3100"  # Loki
     volumes:
       - otel-lgtm-data:/data

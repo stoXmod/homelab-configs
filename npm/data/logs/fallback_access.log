@@ -1,0 +1,8 @@
+[18/Dec/2025:21:06:13 +0530] 200 - GET http 192.168.1.174 "/" [Client 192.168.1.156] [Length 568] [Gzip 1.86] "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" "-"
+[18/Dec/2025:21:06:13 +0530] 400 - GET http 192.168.1.174 "/favicon.ico" [Client 127.0.0.1] [Length 230] [Gzip -] "-" "-"
+[18/Dec/2025:21:11:15 +0530] 304 - GET http 192.168.1.174 "/" [Client 192.168.1.156] [Length 0] [Gzip -] "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" "-"
+[18/Dec/2025:21:23:34 +0530] 404 - GET http 192.168.1.26 "/System/Info/Public" [Client 192.168.1.213] [Length 122] [Gzip 1.35] "Infuse-Direct/8.3.5" "-"
+[18/Dec/2025:21:23:34 +0530] 404 - GET http 192.168.1.174 "/System/Info/Public" [Client 192.168.1.213] [Length 122] [Gzip 1.35] "Infuse-Direct/8.3.5" "-"
+[18/Dec/2025:21:23:37 +0530] 404 - GET http 192.168.1.26 "/System/Info/Public" [Client 192.168.1.213] [Length 122] [Gzip 1.35] "Infuse-Direct/8.3.5" "-"
+[18/Dec/2025:21:23:37 +0530] 404 - GET http 192.168.1.174 "/System/Info/Public" [Client 192.168.1.213] [Length 122] [Gzip 1.35] "Infuse-Direct/8.3.5" "-"
+[19/Dec/2025:18:55:01 +0530] 400 - GET http 192.168.1.174 "/favicon.ico" [Client 127.0.0.1] [Length 230] [Gzip -] "-" "-"
