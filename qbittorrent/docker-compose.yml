@@ -1,0 +1,35 @@
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+
+    ports:
+      # Using port 8075 - unique port for Web UI
+      - "8075:8080"
+      # BitTorrent ports
+      - "6881:6881"
+      - "6881:6881/udp"
+
+    environment:
+      # Timezone
+      - TZ=Asia/Colombo
+      - PUID=1000
+      - PGID=1000
+      # Web UI port inside container
+      - WEBUI_PORT=8080
+
+    volumes:
+      # Configuration
+      - ./config:/config
+      # Downloads directory - adjust to your setup
+      - ./downloads:/downloads
+      # Optional: Watch folder for .torrent files
+      # - ./watch:/watch
+
+    # Optional: Resource limits for Raspberry Pi
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 1G

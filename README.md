@@ -18,6 +18,8 @@ This repository contains Docker Compose configurations for running various self-
   - [Grafana](#grafana)
   - [PocketBase](#pocketbase)
   - [OpenProject](#openproject)
+  - [Appwrite](#appwrite)
+  - [qBittorrent](#qbittorrent)
 - [Getting Started](#getting-started)
 - [Managing Containers](#managing-containers)
 - [Adding New Containers](#adding-new-containers)
@@ -39,6 +41,8 @@ This setup provides a complete homelab environment with:
 - **Dashboards**: Grafana standalone for custom visualizations
 - **Backend**: PocketBase for lightweight backend/database
 - **Project Management**: OpenProject for team collaboration
+- **Backend-as-a-Service**: Appwrite for full-stack development
+- **Downloads**: qBittorrent for torrent management
 
 All services are configured to run on Raspberry Pi with appropriate resource considerations and hardware acceleration where applicable.
 
@@ -61,10 +65,14 @@ All services are configured to run on Raspberry Pi with appropriate resource con
 | 5678 | n8n                 | Workflow automation  |
 | 8055 | PocketBase          | Backend/Admin UI     |
 | 8060 | OpenProject         | Project management   |
+| 8070 | Appwrite            | Console/API          |
+| 8071 | Appwrite            | Realtime             |
+| 8075 | qBittorrent         | Web UI               |
 | 8096 | Jellyfin            | Media server         |
 | 8443 | Pi-hole             | Admin UI             |
 | 9090 | CasaOS              | Container management |
 | 9092 | LGTM Stack          | Prometheus           |
+| 6881 | qBittorrent         | BitTorrent (TCP/UDP) |
 
 **When adding new services**, choose ports not listed above to avoid conflicts.
 
@@ -417,6 +425,111 @@ volumes:
 - Time tracking
 - Team collaboration
 - Document management
+
+---
+
+### Appwrite
+
+**Purpose**: Open-source Backend-as-a-Service (BaaS) platform for web and mobile apps
+
+**Location**: `/appwrite`
+
+**Docker Images**:
+
+- `appwrite/appwrite:1.6` (main + workers)
+- `mariadb:10.11` (database)
+- `redis:7.2-alpine` (cache)
+
+**Access**:
+
+- Console: `http://<raspberry-pi-ip>:8070`
+- Realtime: `http://<raspberry-pi-ip>:8071`
+
+**Configuration**:
+
+```yaml
+ports:
+  - "8070:80" # Console/API
+  - "8071:80" # Realtime
+environment:
+  - _APP_OPENSSL_KEY_V1=${_APP_OPENSSL_KEY_V1}
+  - _APP_DB_PASS=${_APP_DB_PASS}
+  - _APP_REDIS_PASS=${_APP_REDIS_PASS}
+```
+
+**Setup Notes**:
+
+1. Copy `.env.example` to `.env`
+2. Generate secrets:
+   ```bash
+   # OpenSSL key
+   openssl rand -hex 32
+   # Passwords
+   openssl rand -base64 24
+   ```
+3. Fill in all values in `.env`
+4. Start: `docker compose up -d`
+
+**Features**:
+
+- Authentication (OAuth, Email, Phone)
+- Database with real-time subscriptions
+- File storage
+- Serverless functions
+- Messaging (Push, SMS, Email)
+- Full REST and GraphQL API
+
+**Resource Requirements**:
+
+- Minimum 2GB RAM for basic operation
+- Consider adding resource limits on Raspberry Pi
+
+---
+
+### qBittorrent
+
+**Purpose**: Feature-rich BitTorrent client with web interface
+
+**Location**: `/qbittorrent`
+
+**Docker Image**: `lscr.io/linuxserver/qbittorrent:latest`
+
+**Access**: `http://<raspberry-pi-ip>:8075`
+
+**Configuration**:
+
+```yaml
+ports:
+  - "8075:8080" # Web UI
+  - "6881:6881" # BitTorrent TCP
+  - "6881:6881/udp" # BitTorrent UDP
+environment:
+  - TZ=Asia/Colombo
+  - PUID=1000
+  - PGID=1000
+volumes:
+  - ./config:/config
+  - ./downloads:/downloads
+```
+
+**Default Credentials**:
+
+- Username: `admin`
+- Password: Check container logs on first run (`docker logs qbittorrent`)
+
+**Setup Notes**:
+
+1. Update `PUID` and `PGID` with your user ID (`id -u` and `id -g`)
+2. Adjust `./downloads` path to your preferred download location
+3. Forward port 6881 on your router for optimal speeds
+
+**Features**:
+
+- Web-based remote access
+- RSS feed support
+- Search plugins
+- Sequential downloading
+- Bandwidth scheduling
 
 ---
 
