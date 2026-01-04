@@ -7,6 +7,7 @@ This repository contains Docker Compose configurations for running various self-
 ## Table of Contents
 
 - [Overview](#overview)
+- [Port Allocation](#port-allocation)
 - [Container Services](#container-services)
   - [CasaOS](#casaos)
   - [Jellyfin](#jellyfin)
@@ -14,6 +15,9 @@ This repository contains Docker Compose configurations for running various self-
   - [Nginx Proxy Manager (NPM)](#nginx-proxy-manager-npm)
   - [n8n](#n8n)
   - [LGTM Stack](#lgtm-stack)
+  - [Grafana](#grafana)
+  - [PocketBase](#pocketbase)
+  - [OpenProject](#openproject)
 - [Getting Started](#getting-started)
 - [Managing Containers](#managing-containers)
 - [Adding New Containers](#adding-new-containers)
@@ -25,14 +29,44 @@ This repository contains Docker Compose configurations for running various self-
 ## Overview
 
 This setup provides a complete homelab environment with:
+
 - **Media Server**: Jellyfin for streaming
 - **Network Management**: Pi-hole for DNS-based ad blocking
 - **Reverse Proxy**: Nginx Proxy Manager for HTTPS and domain routing
 - **Automation**: n8n for workflow automation
 - **Monitoring**: LGTM stack (Loki, Grafana, Tempo, Mimir) for observability
 - **Container Management**: CasaOS for easy Docker management
+- **Dashboards**: Grafana standalone for custom visualizations
+- **Backend**: PocketBase for lightweight backend/database
+- **Project Management**: OpenProject for team collaboration
 
 All services are configured to run on Raspberry Pi with appropriate resource considerations and hardware acceleration where applicable.
+
+---
+
+## Port Allocation
+
+> **IMPORTANT**: Use unique ports to avoid conflicts. This table shows all allocated ports.
+
+| Port | Service             | Description          |
+| ---- | ------------------- | -------------------- |
+| 80   | Nginx Proxy Manager | Public HTTP          |
+| 81   | Nginx Proxy Manager | Admin UI             |
+| 443  | Nginx Proxy Manager | Public HTTPS         |
+| 3000 | LGTM Stack          | Grafana (built-in)   |
+| 3050 | Grafana             | Standalone Grafana   |
+| 3100 | LGTM Stack          | Loki                 |
+| 4317 | LGTM Stack          | OTLP gRPC            |
+| 4318 | LGTM Stack          | OTLP HTTP            |
+| 5678 | n8n                 | Workflow automation  |
+| 8055 | PocketBase          | Backend/Admin UI     |
+| 8060 | OpenProject         | Project management   |
+| 8096 | Jellyfin            | Media server         |
+| 8443 | Pi-hole             | Admin UI             |
+| 9090 | CasaOS              | Container management |
+| 9092 | LGTM Stack          | Prometheus           |
+
+**When adding new services**, choose ports not listed above to avoid conflicts.
 
 ---
 
@@ -49,12 +83,13 @@ All services are configured to run on Raspberry Pi with appropriate resource con
 **Access**: `http://<raspberry-pi-ip>:9090`
 
 **Configuration**:
+
 ```yaml
 ports:
   - 9090:8080
 volumes:
   - ./casa:/DATA
-  - /var/run/docker.sock:/var/run/docker.sock  # Docker socket access
+  - /var/run/docker.sock:/var/run/docker.sock # Docker socket access
 ```
 
 **Description**: CasaOS provides a user-friendly web interface for managing Docker containers. It has access to the Docker socket, allowing it to start, stop, and monitor other containers on your system.
@@ -72,9 +107,10 @@ volumes:
 **Access**: `http://<raspberry-pi-ip>:8096`
 
 **Configuration**:
+
 ```yaml
 network_mode: host
-user: 1000:1000  # Replace with your user ID
+user: 1000:1000 # Replace with your user ID
 volumes:
   - ./config:/config
   - ./cache:/cache
@@ -82,16 +118,18 @@ volumes:
   - /home/stoxmod/media/movies:/Movies:ro
   - /mnt/passport:/Passport:ro
 devices:
-  - /dev/dri:/dev/dri  # Hardware acceleration for Pi 5
+  - /dev/dri:/dev/dri # Hardware acceleration for Pi 5
 ```
 
 **Features**:
+
 - Hardware-accelerated video transcoding (Raspberry Pi 5 VideoCore VII)
 - Network mode: `host` for optimal performance
 - Read-only media mounts for data protection
 - Customizable media library paths
 
 **Setup Notes**:
+
 1. Update `user` with your user ID (run `id -u` and `id -g`)
 2. Update `JELLYFIN_PublishedServerUrl` with your Pi's IP address
 3. Customize media volume paths to match your setup
@@ -109,13 +147,14 @@ devices:
 **Access**: `http://<raspberry-pi-ip>:8443/admin`
 
 **Configuration**:
+
 ```yaml
 network_mode: host
 environment:
-  TZ: 'Asia/Colombo'
-  WEBPASSWORD: '<your-password>'
-  FTLCONF_LOCAL_IPV4: '192.168.1.174'
-  PIHOLE_DNS_: '1.1.1.1;1.0.0.1'  # Cloudflare DNS
+  TZ: "Asia/Colombo"
+  WEBPASSWORD: "<your-password>"
+  FTLCONF_LOCAL_IPV4: "192.168.1.174"
+  PIHOLE_DNS_: "1.1.1.1;1.0.0.1" # Cloudflare DNS
   WEB_PORT: 8443
 volumes:
   - ./etc-pihole:/etc/pihole
@@ -123,12 +162,14 @@ volumes:
 ```
 
 **Features**:
+
 - Network-wide ad blocking
 - Custom DNS server
 - Web interface on port 8443
 - Persistent configuration and block lists
 
 **Setup Notes**:
+
 1. Change `WEBPASSWORD` to your desired admin password
 2. Update `FTLCONF_LOCAL_IPV4` with your Pi's static IP address
 3. Configure your router to use Pi-hole as the DNS server
@@ -143,29 +184,33 @@ volumes:
 
 **Docker Image**: `jc21/nginx-proxy-manager:latest`
 
-**Access**: 
+**Access**:
+
 - Admin UI: `http://<raspberry-pi-ip>:81`
 - HTTP: Port 80
 - HTTPS: Port 443
 
 **Configuration**:
+
 ```yaml
 ports:
-  - '80:80'    # Public HTTP
-  - '443:443'  # Public HTTPS
-  - '81:81'    # Admin interface
+  - "80:80" # Public HTTP
+  - "443:443" # Public HTTPS
+  - "81:81" # Admin interface
 volumes:
   - ./data:/data
   - ./letsencrypt:/etc/letsencrypt
 ```
 
 **Features**:
+
 - Easy SSL certificate management with Let's Encrypt
 - Reverse proxy for all your services
 - Web-based configuration interface
 - Access lists for security
 
 **Default Credentials**:
+
 - Email: `admin@example.com`
 - Password: `changeme`
 - **Change these immediately after first login!**
@@ -183,6 +228,7 @@ volumes:
 **Access**: `http://<raspberry-pi-ip>:5678`
 
 **Configuration**:
+
 ```yaml
 ports:
   - "5678:5678"
@@ -194,6 +240,7 @@ volumes:
 ```
 
 **Features**:
+
 - Visual workflow builder
 - Hundreds of integrations
 - Persistent workflow storage
@@ -201,6 +248,7 @@ volumes:
 
 **Optional Settings**:
 Uncomment in the docker-compose.yml to enable:
+
 - Basic authentication
 - Custom webhook URL for domain access
 
@@ -212,22 +260,25 @@ Uncomment in the docker-compose.yml to enable:
 
 **Location**: `/lgtm`
 
-**Docker Images**: 
+**Docker Images**:
+
 - `grafana/otel-lgtm` (main stack)
 - `prom/node-exporter` (system metrics)
 
 **Access**:
+
 - Grafana: `http://<raspberry-pi-ip>:3000`
 - Prometheus: `http://<raspberry-pi-ip>:9092`
 
 **Configuration**:
+
 ```yaml
 ports:
-  - "3000:3000"   # Grafana UI
-  - "4317:4317"   # OTLP gRPC
-  - "4318:4318"   # OTLP HTTP
-  - "9092:9090"   # Prometheus
-  - "3100:3100"   # Loki
+  - "3000:3000" # Grafana UI
+  - "4317:4317" # OTLP gRPC
+  - "4318:4318" # OTLP HTTP
+  - "9092:9090" # Prometheus
+  - "3100:3100" # Loki
 volumes:
   - otel-lgtm-data:/data
   - ./lgtm-config.yaml:/otel-lgtm/prometheus.yaml:ro
@@ -236,6 +287,7 @@ volumes:
 ```
 
 **Features**:
+
 - **Grafana**: Visualization and dashboards
 - **Prometheus**: Metrics collection
 - **Loki**: Log aggregation
@@ -244,10 +296,127 @@ volumes:
 - Anonymous viewer access enabled
 
 **Monitored Metrics**:
+
 - System resources (CPU, memory, disk)
 - Hardware temperatures and thermal zones
 - Container performance
 - Custom application metrics
+
+---
+
+### Grafana
+
+**Purpose**: Standalone visualization and dashboards platform
+
+**Location**: `/grafana`
+
+**Docker Image**: `grafana/grafana:latest`
+
+**Access**: `http://<raspberry-pi-ip>:3050`
+
+**Configuration**:
+
+```yaml
+ports:
+  - "3050:3000" # Unique port to avoid conflict with LGTM
+environment:
+  - GF_SECURITY_ADMIN_USER=admin
+  - GF_SECURITY_ADMIN_PASSWORD=admin
+volumes:
+  - grafana_data:/var/lib/grafana
+```
+
+**Default Credentials**:
+
+- Username: `admin`
+- Password: `admin` (change on first login)
+
+**Features**:
+
+- Custom dashboards separate from LGTM stack
+- Plugin ecosystem for extended functionality
+- Connect to external data sources
+
+---
+
+### PocketBase
+
+**Purpose**: Lightweight backend with built-in database and admin UI
+
+**Location**: `/pocketbase`
+
+**Docker Image**: `ghcr.io/muchobien/pocketbase:latest`
+
+**Access**:
+
+- Admin UI: `http://<raspberry-pi-ip>:8055/_/`
+- API: `http://<raspberry-pi-ip>:8055/api/`
+
+**Configuration**:
+
+```yaml
+ports:
+  - "8055:8090" # Unique port
+volumes:
+  - ./pb_data:/pb_data
+```
+
+**Features**:
+
+- SQLite database with REST API
+- Real-time subscriptions
+- Built-in authentication
+- File storage
+- Admin dashboard
+
+**Setup Notes**:
+
+1. Visit the admin UI on first run to create admin account
+2. Data persists in `./pb_data` directory
+
+---
+
+### OpenProject
+
+**Purpose**: Open-source project management and collaboration platform
+
+**Location**: `/openproject`
+
+**Docker Image**: `openproject/openproject:16`
+
+**Access**: `http://<raspberry-pi-ip>:8060`
+
+**Configuration**:
+
+```yaml
+ports:
+  - "8060:80" # Unique port
+environment:
+  - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+  - OPENPROJECT_HOST__NAME=localhost:8060
+volumes:
+  - ./pgdata:/var/openproject/pgdata
+  - ./assets:/var/openproject/assets
+```
+
+**Default Credentials**:
+
+- Username: `admin`
+- Password: `admin` (change on first login)
+
+**Setup Notes**:
+
+1. Copy `.env.example` to `.env`
+2. Generate secret: `head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32`
+3. Set `SECRET_KEY_BASE` in `.env`
+
+**Features**:
+
+- Gantt charts and timelines
+- Agile boards (Scrum/Kanban)
+- Time tracking
+- Team collaboration
+- Document management
 
 ---
 
@@ -263,17 +432,20 @@ volumes:
 ### Initial Setup
 
 1. **Clone this repository**:
+
    ```bash
    git clone <repository-url>
    cd homelab-configs
    ```
 
 2. **Configure environment-specific settings**:
+
    - Update IP addresses in configurations
    - Set passwords and credentials
    - Adjust volume paths for your system
 
 3. **Start all services**:
+
    ```bash
    # Start all services
    for dir in */; do
@@ -282,6 +454,7 @@ volumes:
    ```
 
    Or start individual services:
+
    ```bash
    cd jellyfin
    docker compose up -d
@@ -351,28 +524,28 @@ cd new-service
 Use this template:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   service-name:
     image: <docker-image>:latest
     container_name: service-name
     restart: unless-stopped
-    
+
     # Ports (if needed)
     ports:
       - "host-port:container-port"
-    
+
     # Environment variables
     environment:
       - TZ=Asia/Colombo
       # Add service-specific variables
-    
+
     # Volumes for persistent data
     volumes:
       - ./data:/data
       # Add service-specific volumes
-    
+
     # Network (optional)
     # networks:
     #   - service-network
@@ -381,7 +554,6 @@ services:
 volumes:
   service-data:
     driver: local
-
 # Define networks (if needed)
 # networks:
 #   service-network:
@@ -428,6 +600,7 @@ docker compose logs -f
 ### 6. Document Your Service
 
 Add a section to this README documenting:
+
 - Service purpose
 - Access URLs and ports
 - Important configuration options
@@ -447,20 +620,23 @@ Add a section to this README documenting:
 ### Performance Optimization
 
 1. **Use Hardware Acceleration**:
+
    - Jellyfin uses `/dev/dri` for video transcoding
    - Check available devices: `ls -la /dev/dri`
 
 2. **Network Mode**:
+
    - Some services use `host` network mode for better performance
    - Trade-off: Port conflicts are possible
 
 3. **Resource Limits**:
    Add to docker-compose.yml if needed:
+
    ```yaml
    deploy:
      resources:
        limits:
-         cpus: '2'
+         cpus: "2"
          memory: 1G
    ```
 
@@ -492,11 +668,13 @@ restart: "no"
 ### Service Won't Start
 
 1. Check logs:
+
    ```bash
    docker compose logs
    ```
 
 2. Verify port availability:
+
    ```bash
    sudo netstat -tlnp | grep <port>
    ```
@@ -510,11 +688,13 @@ restart: "no"
 ### Performance Issues
 
 1. Monitor resources:
+
    ```bash
    docker stats
    ```
 
 2. Check Pi temperature:
+
    ```bash
    vcgencmd measure_temp
    ```
@@ -527,6 +707,7 @@ restart: "no"
 ### Network Issues
 
 1. Check container networking:
+
    ```bash
    docker network ls
    docker network inspect <network-name>
@@ -540,6 +721,7 @@ restart: "no"
 ### Permission Errors
 
 1. Find your user/group ID:
+
    ```bash
    id -u  # User ID
    id -g  # Group ID
@@ -553,6 +735,7 @@ restart: "no"
 ### Container Logs
 
 View detailed logs with timestamps:
+
 ```bash
 docker compose logs -f --timestamps --tail=100
 ```
@@ -603,6 +786,7 @@ docker system prune -a --volumes
 ## Contributing
 
 When adding new services:
+
 1. Follow the directory structure
 2. Document in this README
 3. Test thoroughly on Raspberry Pi
@@ -619,6 +803,7 @@ Personal homelab configuration - use at your own discretion.
 ## Support
 
 For issues with specific services, consult their official documentation:
+
 - [CasaOS](https://casaos.io/)
 - [Jellyfin](https://jellyfin.org/docs/)
 - [Pi-hole](https://docs.pi-hole.net/)
