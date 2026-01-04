@@ -1,0 +1,47 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+
+    ports:
+      # Using port 3050 - unique port to avoid conflicts
+      - "3050:3000"
+
+    environment:
+      # Timezone
+      - TZ=Asia/Colombo
+
+      # Security - change these for production
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+      # Server configuration
+      - GF_SERVER_ROOT_URL=http://localhost:3050
+
+      # Optional: Allow anonymous access (read-only)
+      # - GF_AUTH_ANONYMOUS_ENABLED=true
+      # - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      # - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+
+      # Optional: Allow embedding in iframes
+      # - GF_SECURITY_ALLOW_EMBEDDING=true
+
+    volumes:
+      # Persistent data storage
+      - grafana_data:/var/lib/grafana
+
+      # Optional: Custom provisioning (datasources, dashboards)
+      # - ./provisioning:/etc/grafana/provisioning
+
+    # Optional: Connect to other containers' networks
+    # networks:
+    #   - monitoring
+
+volumes:
+  grafana_data:
+    driver: local
+# Optional: If connecting to other networks
+# networks:
+#   monitoring:
+#     external: true
