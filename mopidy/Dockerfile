@@ -19,11 +19,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mopidy \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Mopidy extensions via pip (use --break-system-packages for Debian 12)
+# Install only Mopidy extensions via pip (avoid reinstalling mopidy itself)
+# ytmusicapi is needed for Mopidy-YTMusic
 RUN pip3 install --break-system-packages --no-cache-dir \
+    ytmusicapi \
     Mopidy-Iris \
     Mopidy-YTMusic \
-    Mopidy-Local
+    Mopidy-Local \
+    && pip3 uninstall -y mopidy 2>/dev/null || true
 
 # Create directories
 RUN mkdir -p /config /var/lib/mopidy/local /var/lib/mopidy/media /var/lib/mopidy/cache /var/lib/mopidy/data
@@ -32,4 +35,5 @@ COPY mopidy.conf /config/mopidy.conf
 
 EXPOSE 6680 6600
 
-CMD ["mopidy", "--config", "/config/mopidy.conf"]
+# Use the system-installed mopidy (from apt)
+CMD ["/usr/bin/mopidy", "--config", "/config/mopidy.conf"]
