@@ -20,6 +20,7 @@ This repository contains Docker Compose configurations for running various self-
   - [OpenProject](#openproject)
   - [Appwrite](#appwrite)
   - [qBittorrent](#qbittorrent)
+  - [Mopidy](#mopidy)
 - [Getting Started](#getting-started)
 - [Managing Containers](#managing-containers)
 - [Adding New Containers](#adding-new-containers)
@@ -43,6 +44,7 @@ This setup provides a complete homelab environment with:
 - **Project Management**: OpenProject for team collaboration
 - **Backend-as-a-Service**: Appwrite for full-stack development
 - **Downloads**: qBittorrent for torrent management
+- **Music Server**: Mopidy for YouTube Music streaming with remote control
 
 All services are configured to run on Raspberry Pi with appropriate resource considerations and hardware acceleration where applicable.
 
@@ -73,6 +75,8 @@ All services are configured to run on Raspberry Pi with appropriate resource con
 | 9090 | CasaOS              | Container management |
 | 9092 | LGTM Stack          | Prometheus           |
 | 6881 | qBittorrent         | BitTorrent (TCP/UDP) |
+| 6680 | Mopidy              | Web interface (Iris) |
+| 6600 | Mopidy              | MPD protocol         |
 
 **When adding new services**, choose ports not listed above to avoid conflicts.
 
@@ -533,6 +537,91 @@ volumes:
 
 ---
 
+### Mopidy
+
+**Purpose**: Music server with YouTube Music integration and remote control
+
+**Location**: `/mopidy`
+
+**Docker Image**: Custom build based on `ghcr.io/mopidy/mopidy:latest`
+
+**Access**:
+
+- Web Interface: `http://<raspberry-pi-ip>:6680`
+- Iris UI (recommended): `http://<raspberry-pi-ip>:6680/iris`
+- Mobile UI: `http://<raspberry-pi-ip>:6680/mobile`
+
+**Configuration**:
+
+```yaml
+build: .
+ports:
+  - "6680:6680" # Web interface
+  - "6600:6600" # MPD protocol
+volumes:
+  - ./mopidy.conf:/config/mopidy.conf
+  - ./ytmusic_auth.json:/config/ytmusic_auth.json
+  - ./local:/var/lib/mopidy/local
+  - ./media:/var/lib/mopidy/media
+devices:
+  - /dev/snd:/dev/snd # Audio device access
+```
+
+**Setup Notes**:
+
+1. **Generate YouTube Music auth file** (on your PC with a browser):
+
+   ```bash
+   pip install mopidy-ytmusic
+   mopidy-ytmusic setup
+   # Follow prompts to authenticate with Google account
+   ```
+
+2. **Transfer auth file to Pi**:
+
+   ```bash
+   scp ytmusic_auth.json pi@<raspberry-pi-ip>:~/homelab-configs/mopidy/
+   ```
+
+3. **Build and start**:
+   ```bash
+   cd mopidy
+   docker compose up -d --build
+   ```
+
+**Audio Configuration**:
+
+If audio doesn't work initially:
+
+```bash
+# Check ALSA devices on Pi
+aplay -l
+
+# Test audio output
+speaker-test -t wav -c 2
+
+# Adjust volume
+alsamixer
+```
+
+You may need to adjust the audio device in `mopidy.conf`:
+
+```ini
+[audio]
+output = alsasink device=hw:X,Y  # Replace X,Y with your device numbers
+```
+
+**Features**:
+
+- Web-based control from any device on your network
+- YouTube Music library search and playback
+- Queue management and playlists
+- Multiple clients can control simultaneously
+- Persistent state - resumes where you left off
+- MPD protocol support for alternative clients
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -923,3 +1012,4 @@ For issues with specific services, consult their official documentation:
 - [Nginx Proxy Manager](https://nginxproxymanager.com/)
 - [n8n](https://docs.n8n.io/)
 - [Grafana](https://grafana.com/docs/)
+- [Mopidy](https://docs.mopidy.com/)

@@ -1,0 +1,8 @@
+{
+  "_comment": "This is a placeholder. Generate your auth file by running: pip install mopidy-ytmusic && mopidy-ytmusic setup",
+  "access_token": "YOUR_ACCESS_TOKEN",
+  "refresh_token": "YOUR_REFRESH_TOKEN",
+  "scope": "https://www.googleapis.com/auth/youtube",
+  "token_type": "Bearer",
+  "expires_at": 0
+}

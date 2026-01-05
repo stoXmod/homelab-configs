@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  mopidy:
+    build: .
+    container_name: mopidy
+    restart: unless-stopped
+    ports:
+      - "6680:6680" # Web interface (Iris, Mobile)
+      - "6600:6600" # MPD protocol (optional)
+    volumes:
+      - ./mopidy.conf:/config/mopidy.conf
+      - ./ytmusic_auth.json:/config/ytmusic_auth.json
+      - ./local:/var/lib/mopidy/local
+      - ./media:/var/lib/mopidy/media
+      - /etc/localtime:/etc/localtime:ro
+    devices:
+      - /dev/snd:/dev/snd # Audio device access
+    environment:
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+      - TZ=Asia/Colombo
+    privileged: true
