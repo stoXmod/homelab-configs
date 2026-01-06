@@ -7,10 +7,6 @@ services:
     # Network mode host for optimal streaming performance
     network_mode: host
 
-    # Run as your user (update with your user/group ID)
-    # Get your IDs with: id -u && id -g
-    user: 1000:1000
-
     environment:
       # Timezone
       - TZ=Asia/Colombo
