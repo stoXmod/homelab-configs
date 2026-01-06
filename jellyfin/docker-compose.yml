@@ -9,9 +9,7 @@ services:
     volumes:
       - ./config:/config
       - ./cache:/cache
-      - ~/media:/media:ro
-      - /home/stoxmod/media/movies:/Movies:ro
-      - /mnt/passport:/Passport:ro
+      - /home/pi/media:/media:ro
     restart: unless-stopped
     environment:
       - JELLYFIN_PublishedServerUrl=http://192.168.1.174  # Replace with your Pi's IP
