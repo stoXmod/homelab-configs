@@ -1,19 +1,44 @@
-version: '3.8'
-
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
-    user: 1000:1000  # Replace with your user ID (run 'id -u' and 'id -g')
+    restart: unless-stopped
+
+    # Network mode host for optimal streaming performance
     network_mode: host
+
+    environment:
+      # Timezone
+      - TZ=Asia/Colombo
+      # Published server URL (update with your Pi's IP)
+      - JELLYFIN_PublishedServerUrl=http://192.168.1.174:8096
+
     volumes:
+      # Configuration and cache (persistent data)
       - ./config:/config
       - ./cache:/cache
+
+      # Media libraries (read-only for protection)
+      # Update these paths to match your media locations
       - ~/media:/media:ro
+      - /home/pi/media:/PiMedia:ro
       - /home/stoxmod/media/movies:/Movies:ro
       - /mnt/passport:/Passport:ro
-    restart: unless-stopped
-    environment:
-      - JELLYFIN_PublishedServerUrl=http://192.168.1.174  # Replace with your Pi's IP
+
     devices:
-      - /dev/dri:/dev/dri  # Hardware acceleration (Pi 5 has VideoCore VII)
+      # Hardware acceleration for Raspberry Pi 5 (VideoCore VII)
+      # Remove if not on Pi 5 or if experiencing issues
+      - /dev/dri:/dev/dri
+
+    # Optional: Resource limits for Raspberry Pi
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 2G
+
+# Notes:
+# - Port 8096 is used for web interface (via host networking)
+# - Update 'user' with your actual user ID (run: id -u && id -g)
+# - Update JELLYFIN_PublishedServerUrl with your Pi's IP address
+# - Customize media volume paths to match your setup
+# - Hardware transcoding requires /dev/dri device mapping

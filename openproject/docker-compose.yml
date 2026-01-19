@@ -1,0 +1,52 @@
+services:
+  openproject:
+    image: openproject/openproject:16
+    container_name: openproject
+    restart: unless-stopped
+
+    ports:
+      # Using port 8060 - unique port to avoid conflicts
+      - "8060:80"
+
+    environment:
+      # Timezone
+      - TZ=Asia/Colombo
+
+      # Host configuration (update with your domain or IP)
+      - OPENPROJECT_HOST__NAME=localhost:8060
+
+      # Security - IMPORTANT: Generate a secure random string
+      # Generate with: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+
+      # HTTPS settings (disable for local/development, enable for production)
+      - OPENPROJECT_HTTPS=false
+
+      # Default language for initial setup
+      - OPENPROJECT_DEFAULT__LANGUAGE=en
+
+      # Optional: Admin email
+      # - OPENPROJECT_SEED__ADMIN__USER__MAIL=admin@example.com
+
+      # Optional: SMTP settings for email notifications
+      # - OPENPROJECT_SMTP__ADDRESS=smtp.gmail.com
+      # - OPENPROJECT_SMTP__PORT=587
+      # - OPENPROJECT_SMTP__DOMAIN=example.com
+      # - OPENPROJECT_SMTP__AUTHENTICATION=plain
+      # - OPENPROJECT_SMTP__ENABLE__STARTTLS__AUTO=true
+      # - OPENPROJECT_SMTP__USER__NAME=your-email@gmail.com
+      # - OPENPROJECT_SMTP__PASSWORD=your-password
+
+    volumes:
+      # Persistent database storage
+      - ./pgdata:/var/openproject/pgdata
+
+      # Persistent assets (uploaded files, avatars, etc.)
+      - ./assets:/var/openproject/assets
+
+    # Optional: Resource limits for Raspberry Pi
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 2G
