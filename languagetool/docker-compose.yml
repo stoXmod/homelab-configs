@@ -1,0 +1,9 @@
+version: "3.9"   # any recent version works
+
+services:
+  languagetool:
+    image: erikvl87/languagetool
+    container_name: languagetool
+    ports:
+      - "8010:8010"
+    restart: unless-stopped
