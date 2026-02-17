@@ -1,20 +1,6 @@
 FROM debian:bookworm-slim
-
-# Install dependencies for SSL/Networking
-RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
-
-# Create app directory
-WORKDIR /app
-
-# Copy binary and config
-COPY zeroclaw /app/zeroclaw
-COPY config.toml /root/.zeroclaw/config.toml
-
-# Set permissions
-RUN chmod +x /app/zeroclaw
-
-# Expose Gateway Port
-EXPOSE 8080
-
-# Run the Daemon
-CMD ["/app/zeroclaw", "daemon"]
+RUN apt-get update && apt-get install -y ca-certificates docker.io && rm -rf /var/lib/apt/lists/*
+# Download the ARM64 binary directly (update version as needed)
+ADD https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-arm64 /usr/local/bin/zeroclaw
+RUN chmod +x /usr/local/bin/zeroclaw
+ENTRYPOINT ["zeroclaw", "gateway"]

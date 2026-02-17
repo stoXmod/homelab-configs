@@ -5,16 +5,16 @@ services:
     build: .
     container_name: zeroclaw
     restart: unless-stopped
-    
-    # Map Host Port 8085 to Container Port 8080 (Gateway)
     ports:
-      - "8085:8080"
-    
-    # Persistent Data
+      - "8085:8080" # Matches README port allocation
     volumes:
-      - ./data:/root/.zeroclaw/workspace # Agent workspace & memory
-      - ./config.toml:/root/.zeroclaw/config.toml # Config file
-    
-    # Environment (Optional overrides)
+      - ./data:/root/.zeroclaw/workspace
+      - ./config.toml:/root/.zeroclaw/config.toml
+      # Essential: give ZeroClaw access to manage your homelab
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - RUST_LOG=info
+    deploy:
+      resources:
+        limits:
+          memory: 50M # Even 50MB is overkill for ZeroClaw
