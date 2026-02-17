@@ -1,0 +1,5 @@
+# ZeroClaw binary (downloaded at deploy time)
+zeroclaw
+
+# Persistent data directory
+data/

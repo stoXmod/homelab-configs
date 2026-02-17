@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  zeroclaw:
+    build: .
+    container_name: zeroclaw
+    restart: unless-stopped
+    
+    # Map Host Port 8085 to Container Port 8080 (Gateway)
+    ports:
+      - "8085:8080"
+    
+    # Persistent Data
+    volumes:
+      - ./data:/root/.zeroclaw/workspace # Agent workspace & memory
+      - ./config.toml:/root/.zeroclaw/config.toml # Config file
+    
+    # Environment (Optional overrides)
+    environment:
+      - RUST_LOG=info

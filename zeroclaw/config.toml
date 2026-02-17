@@ -1,0 +1,17 @@
+# ~/.zeroclaw/config.toml
+api_key = "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" # Get from OpenRouter or similar
+default_provider = "openrouter"
+default_model = "anthropic/claude-3-haiku" # Lightweight model recommended for Pi
+default_temperature = 0.7
+
+[gateway]
+require_pairing = true          # Security: Require pairing code on first connect
+allow_public_bind = false       # Binds to 0.0.0.0 only inside container
+
+[memory]
+backend = "sqlite"              # Uses built-in SQLite vector db
+auto_save = true
+
+[autonomy]
+level = "supervised"
+workspace_only = true           # Sandbox agent to workspace

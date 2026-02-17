@@ -21,6 +21,7 @@ This repository contains Docker Compose configurations for running various self-
   - [Appwrite](#appwrite)
   - [qBittorrent](#qbittorrent)
   - [Mopidy](#mopidy)
+  - [ZeroClaw](#zeroclaw)
 - [Getting Started](#getting-started)
 - [Managing Containers](#managing-containers)
 - [Adding New Containers](#adding-new-containers)
@@ -77,6 +78,7 @@ All services are configured to run on Raspberry Pi with appropriate resource con
 | 6881 | qBittorrent         | BitTorrent (TCP/UDP) |
 | 6680 | Mopidy              | Web interface (Iris) |
 | 6600 | Mopidy              | MPD protocol         |
+| 8085 | ZeroClaw            | Gateway / Webhook API|
 
 **When adding new services**, choose ports not listed above to avoid conflicts.
 
@@ -622,6 +624,47 @@ output = alsasink device=hw:X,Y  # Replace X,Y with your device numbers
 
 ---
 
+### ZeroClaw
+
+**Purpose**: Lightweight AI assistant agent with webhook gateway
+
+**Location**: `/zeroclaw`
+
+**Docker Image**: Custom build (pre-compiled binary)
+
+**Access**: `http://<raspberry-pi-ip>:8085`
+
+**Configuration**:
+
+```yaml
+build: .
+ports:
+  - "8085:8080" # Gateway / Webhook API
+volumes:
+  - ./data:/root/.zeroclaw/workspace # Agent workspace & memory
+  - ./config.toml:/root/.zeroclaw/config.toml # Config file
+environment:
+  - RUST_LOG=info
+```
+
+**Features**:
+
+- Extremely lightweight (<5MB RAM)
+- SQLite vector database for memory
+- Supervised autonomy mode
+- Pairing-based security
+- OpenRouter / Claude Haiku integration
+
+**Setup Notes**:
+
+1. Download the ARM64 binary from ZeroClaw releases
+2. Edit `config.toml` with your API key
+3. Build and start: `docker compose up -d --build`
+4. Check logs for pairing code: `docker compose logs -f zeroclaw`
+5. See [zeroclaw/SETUP.md](zeroclaw/SETUP.md) for full deployment instructions
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -1013,3 +1056,4 @@ For issues with specific services, consult their official documentation:
 - [n8n](https://docs.n8n.io/)
 - [Grafana](https://grafana.com/docs/)
 - [Mopidy](https://docs.mopidy.com/)
+- [ZeroClaw](https://github.com/zeroclaw-labs/zeroclaw)
