@@ -1,14 +1,19 @@
+workspace_dir = "/zeroclaw-data/workspace"
+config_path = "/zeroclaw-data/.zeroclaw/config.toml"
 api_key = "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"
 default_provider = "openrouter"
-default_model = "anthropic/claude-3-haiku" # Recommended for speed/low cost
+default_model = "anthropic/claude-3-haiku"
+default_temperature = 0.7
 
 [memory]
 backend = "sqlite"
 auto_save = true
 
 [gateway]
+port = 3000
+host = "[::]"
 require_pairing = true
-allow_public_bind = false
+allow_public_bind = true
 
 [autonomy]
 level = "supervised"

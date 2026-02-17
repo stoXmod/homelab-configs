@@ -1,20 +1,56 @@
-version: "3.8"
+# ZeroClaw Docker Compose – Homelab Deployment
+#
+# Quick start:
+#   1. Set your API key in config.toml (or via .env / environment)
+#   2. Run: docker compose up -d
+#   3. Access gateway at http://<pi-ip>:8085
+#
+# For more info: https://github.com/theonlyhennygod/zeroclaw
 
 services:
   zeroclaw:
-    build: .
+    image: ghcr.io/theonlyhennygod/zeroclaw:latest
+    # Or build from source (uncomment below, comment image above):
+    # build: .
     container_name: zeroclaw
     restart: unless-stopped
-    ports:
-      - "8085:8080"
-    volumes:
-      - ./data:/root/.zeroclaw/workspace
-      - ./config.toml:/root/.zeroclaw/config.toml
-      - /var/run/docker.sock:/var/run/docker.sock
+
     environment:
+      # Required: Your LLM provider API key
+      - API_KEY=${API_KEY:-}
+      # Optional: LLM provider (default: openrouter)
+      # Options: openrouter, openai, anthropic, ollama
+      - PROVIDER=${PROVIDER:-openrouter}
+      # Allow public bind inside Docker (required for container networking)
+      - ZEROCLAW_ALLOW_PUBLIC_BIND=true
       - RUST_LOG=info
+
+    volumes:
+      # Persist workspace data
+      - ./data:/zeroclaw-data/workspace
+      # Mount custom config
+      - ./config.toml:/zeroclaw-data/.zeroclaw/config.toml
+      # Docker socket for container management
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    ports:
+      # Host port 8085 → container port 3000 (gateway)
+      - "8085:3000"
+
+    # Resource limits (important for Pi 3B+ with 1 GB RAM)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 128M
+        reservations:
+          cpus: '0.25'
+          memory: 32M
+
+    # Health check
     healthcheck:
-      test: ["CMD", "zeroclaw", "status"]
+      test: ["CMD", "zeroclaw", "doctor"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s

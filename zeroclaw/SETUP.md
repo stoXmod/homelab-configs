@@ -9,8 +9,9 @@
 | Item             | Detail                                     |
 | ---------------- | ------------------------------------------ |
 | **Service**      | ZeroClaw AI Gateway                        |
-| **Port**         | `8085`                                     |
-| **RAM Usage**    | < 5 MB (50 MB container limit)             |
+| **Image**        | `ghcr.io/theonlyhennygod/zeroclaw:latest`  |
+| **Host Port**    | `8085` → container port `3000`             |
+| **RAM Usage**    | < 5 MB (128 MB container limit)            |
 | **Backend DB**   | SQLite (built-in)                          |
 | **Architecture** | ARM64 (Raspberry Pi 3B+ / 4 / 5)          |
 | **Security**     | Pairing-based authentication               |
@@ -31,7 +32,7 @@
 zeroclaw/
 ├── config.toml          # Agent configuration
 ├── docker-compose.yml   # Docker Compose service definition
-├── Dockerfile           # Container build (ARM64 binary)
+├── Dockerfile           # Fallback: build from source (not used by default)
 ├── data/                # Persistent workspace & SQLite memory
 │   └── .gitkeep
 ├── guide.md             # Original setup reference
@@ -62,17 +63,24 @@ You can get a key from:
 - **OpenRouter**: <https://openrouter.ai/keys> (recommended – access to multiple models)
 - **Anthropic**: <https://console.anthropic.com/>
 
-### 3. Build & Start
+Alternatively, set `API_KEY` as an environment variable (create a `.env` file):
 
 ```bash
-docker compose up -d --build
+echo "API_KEY=sk-or-v1-your-actual-key-here" > .env
+```
+
+### 3. Start the Service
+
+```bash
+docker compose up -d
 ```
 
 This will:
 
-1. Build the container from `Dockerfile` (downloads the ARM64 binary)
-2. Mount `config.toml` and `data/` directory
-3. Expose the gateway on port **8085**
+1. Pull the official ZeroClaw image from GHCR
+2. Mount `config.toml` at `/zeroclaw-data/.zeroclaw/config.toml`
+3. Mount `data/` at `/zeroclaw-data/workspace`
+4. Expose the gateway on host port **8085** (container port 3000)
 
 ### 4. Get the Pairing Code
 
@@ -112,13 +120,18 @@ http://<your-pi-ip>:8085
 
 | Key                          | Description                                     | Default              |
 | ---------------------------- | ----------------------------------------------- | -------------------- |
+| `workspace_dir`              | Workspace directory inside container            | `/zeroclaw-data/workspace` |
+| `config_path`                | Config file path inside container               | `/zeroclaw-data/.zeroclaw/config.toml` |
 | `api_key`                    | API key for the LLM provider                    | *(required)*         |
 | `default_provider`           | LLM provider (`openrouter` / `anthropic`)       | `openrouter`         |
 | `default_model`              | Model to use                                    | `anthropic/claude-3-haiku` |
+| `default_temperature`        | LLM temperature                                 | `0.7`                |
 | `memory.backend`             | Storage backend                                 | `sqlite`             |
 | `memory.auto_save`           | Auto-persist conversations                      | `true`               |
+| `gateway.port`               | Gateway listening port                           | `3000`               |
+| `gateway.host`               | Gateway bind address                             | `[::]`               |
 | `gateway.require_pairing`    | Require pairing code for first connect           | `true`               |
-| `gateway.allow_public_bind`  | Allow binding to `0.0.0.0`                       | `false`              |
+| `gateway.allow_public_bind`  | Allow binding to `0.0.0.0` / `[::]`             | `true`               |
 | `autonomy.level`             | Autonomy level (`supervised` / `autonomous`)    | `supervised`         |
 | `autonomy.workspace_only`    | Restrict actions to workspace                    | `true`               |
 | `autonomy.allowed_commands`  | Shell commands ZeroClaw can execute              | `docker,ls,cat,grep,git` |
@@ -137,8 +150,8 @@ docker compose restart
 # View live logs
 docker compose logs -f zeroclaw
 
-# Update (rebuild with latest binary)
-docker compose up -d --build
+# Update (pull latest image)
+docker compose pull && docker compose up -d
 
 # Check resource usage
 docker stats zeroclaw
@@ -151,8 +164,8 @@ docker stats zeroclaw
 ### Container won't start
 
 ```bash
-# Check build logs
-docker compose up --build  # (without -d to see output)
+# Check logs
+docker compose up  # (without -d to see output)
 
 # Check if port is in use
 sudo ss -tlnp | grep 8085
@@ -166,7 +179,7 @@ docker compose logs zeroclaw | grep -i pairing
 
 ### Out of memory on Pi 3B+
 
-The container is limited to 50 MB. If your Pi is tight on RAM:
+The container is limited to 128 MB. If your Pi is tight on RAM:
 
 ```bash
 # Check overall memory
@@ -178,20 +191,20 @@ docker stats --no-stream
 
 Consider stopping heavy services temporarily if needed.
 
-### Binary download fails during build
+### Image pull fails
 
-If GitHub is unreachable, manually download and place the binary:
+If GHCR is unreachable, you can build from source:
 
 ```bash
-# On a machine with internet access
-wget https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-arm64
+# Clone the source repo
+git clone https://github.com/theonlyhennygod/zeroclaw.git zeroclaw-src
 
-# Copy to Pi
-scp zeroclaw-arm64 pi@<pi-ip>:~/homelab-configs/zeroclaw/
+# Build locally
+docker build -t zeroclaw-local -f Dockerfile ./zeroclaw-src
 
-# Update Dockerfile to use COPY instead of ADD
-# Replace the ADD line with:
-# COPY zeroclaw-arm64 /usr/local/bin/zeroclaw
+# Update docker-compose.yml to use local build:
+# Comment out:  image: ghcr.io/theonlyhennygod/zeroclaw:latest
+# Uncomment:    build: .
 ```
 
 ---
