@@ -6,15 +6,15 @@ services:
     container_name: zeroclaw
     restart: unless-stopped
     ports:
-      - "8085:8080" # Matches README port allocation
+      - "8085:8080"
     volumes:
       - ./data:/root/.zeroclaw/workspace
       - ./config.toml:/root/.zeroclaw/config.toml
-      # Essential: give ZeroClaw access to manage your homelab
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - RUST_LOG=info
-    deploy:
-      resources:
-        limits:
-          memory: 50M # Even 50MB is overkill for ZeroClaw
+    healthcheck:
+      test: ["CMD", "zeroclaw", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
