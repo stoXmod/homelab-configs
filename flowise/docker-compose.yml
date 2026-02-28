@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  flowise:
+    image: flowiseai/flowise
+    container_name: flowise
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000
+      - GENERIC_TIMEZONE=Asia/Colombo
+      - TZ=Asia/Colombo
+      # Optional: Enable authentication
+      # - FLOWISE_USERNAME=admin
+      # - FLOWISE_PASSWORD=your-password-here
+    volumes:
+      - flowise_data:/root/.flowise
+
+volumes:
+  flowise_data:
+    driver: local
