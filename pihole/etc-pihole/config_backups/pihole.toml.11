@@ -1,7 +1,7 @@
 # Pi-hole configuration file (v6.4.1)
 # Encoding: UTF-8
 # This file is managed by pihole-FTL
-# Last updated on 2025-12-18 20:05:00 +0530
+# Last updated on 2025-12-18 20:50:18 +0530
 
 [dns]
   # Upstream DNS Servers to be used by Pi-hole. If this is not set, Pi-hole will not
@@ -128,7 +128,9 @@
   #
   # Allowed values are:
   #     Array of custom DNS records each one in HOSTS form: "IP HOSTNAME [HOSTNAME ...]"
-  hosts = []
+  hosts = [
+    "192.168.1.26 pi-server"
+  ] ### CHANGED, default = []
 
   # If set, queries for plain names, without dots or domain parts, are never forwarded to
   # upstream nameservers
@@ -221,7 +223,10 @@
   #
   # Allowed values are:
   #     Array of CNAMEs, each one in the following form: "<cname>,<target>[,<TTL>]"
-  cnameRecords = []
+  cnameRecords = [
+    "rb-n8n.nishara.me,pi-server",
+    "rb-pihole.nishara.me,pi-server"
+  ] ### CHANGED, default = []
 
   # Port used by the DNS server
   #
@@ -1674,8 +1679,8 @@
   all = false
 
 # Configuration statistics:
-# 162 total entries out of which 157 entries are default
-# --> 5 entries are modified
+# 162 total entries out of which 155 entries are default
+# --> 7 entries are modified
 # 2 entries are forced through environment:
 #   - dns.listeningMode
 #   - webserver.port

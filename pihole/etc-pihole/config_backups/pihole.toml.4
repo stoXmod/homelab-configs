@@ -1,7 +1,7 @@
 # Pi-hole configuration file (v6.4.1)
 # Encoding: UTF-8
 # This file is managed by pihole-FTL
-# Last updated on 2025-12-18 20:53:55 +0530
+# Last updated on 2025-12-18 21:30:29 +0530
 
 [dns]
   # Upstream DNS Servers to be used by Pi-hole. If this is not set, Pi-hole will not
@@ -12,6 +12,8 @@
   # Allowed values are:
   #     Array of IP addresses and/or hostnames, optionally with a port (#...)
   upstreams = [
+    "192.168.1.174",
+    "192.168.1.26",
     "8.8.8.8",
     "8.8.4.4",
     "2001:4860:4860:0:0:0:0:8888",
@@ -227,7 +229,8 @@
     "rb-n8n.nishara.me,pi-server",
     "rb-pihole.nishara.me,pi-server",
     "rb-jellyfin.nishara.me,pi-server",
-    "rb-npm.nishara.me,pi-server"
+    "rb-npm.nishara.me,pi-server",
+    "rb-casaos.nishara.me,pi-server"
   ] ### CHANGED, default = []
 
   # Port used by the DNS server
@@ -1092,7 +1095,7 @@
     #       High-contrast dark
     #   - "lcars"
     #       Star Trek LCARS
-    theme = "default-auto"
+    theme = "default-darker" ### CHANGED, default = "default-auto"
 
   [webserver.api]
     # Number of concurrent sessions allowed for the API. If the number of sessions exceeds
@@ -1681,8 +1684,8 @@
   all = false
 
 # Configuration statistics:
-# 162 total entries out of which 155 entries are default
-# --> 7 entries are modified
+# 162 total entries out of which 154 entries are default
+# --> 8 entries are modified
 # 2 entries are forced through environment:
 #   - dns.listeningMode
 #   - webserver.port
