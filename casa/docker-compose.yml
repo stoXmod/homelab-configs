@@ -1,6 +1,6 @@
 services:
   casa:
-    image: dockurr/casa
+    image: dockurr/casa:latest
     container_name: casa
     ports:
       - 9090:8080
