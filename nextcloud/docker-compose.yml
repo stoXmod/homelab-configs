@@ -1,0 +1,181 @@
+name: big-bear-nextcloud-smb
+services:
+    big-bear-nextcloud-smb:
+        cpu_shares: 90
+        command: []
+        container_name: big-bear-nextcloud-smb
+        depends_on:
+            big-bear-nextcloud-smb-db:
+                condition: service_healthy
+                required: true
+            big-bear-nextcloud-smb-redis:
+                condition: service_healthy
+                required: true
+        deploy:
+            resources:
+                limits:
+                    memory: "8454668288"
+        environment:
+            NEXTCLOUD_ADMIN_PASSWORD: casaos
+            NEXTCLOUD_ADMIN_USER: casaos
+            OVERWRITEPROTOCOL: http
+            PHP_MEMORY_LIMIT: 1024M
+            PHP_UPLOAD_LIMIT: 1024M
+            POSTGRES_DB: nextcloud
+            POSTGRES_HOST: big-bear-nextcloud-smb-db
+            POSTGRES_PASSWORD: casaos
+            POSTGRES_USER: casaos
+            REDIS_HOST: big-bear-nextcloud-smb-redis
+            TRUSTED_PROXIES: ""
+        hostname: big-bear-nextcloud-smb
+        image: bigbeartechworld/big-bear-nextcloud-with-smbclient:32.0.3
+        labels:
+            icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/nextcloud.png
+        networks:
+            big_bear_nextcloud_network: null
+        ports:
+            - mode: ingress
+              target: 80
+              published: "7580"
+              protocol: tcp
+        restart: unless-stopped
+        volumes:
+            - type: bind
+              source: /DATA/AppData/big-bear-nextcloud-smb/html
+              target: /var/www/html
+              bind:
+                create_host_path: true
+            - type: bind
+              source: /mnt/sda2
+              target: /mnt/sda2
+            - type: bind
+              source: /mnt/sdb2
+              target: /mnt/sdb2
+    big-bear-nextcloud-smb-cron:
+        cpu_shares: 90
+        command: []
+        container_name: big-bear-nextcloud-smb-cron
+        depends_on:
+            big-bear-nextcloud-smb-db:
+                condition: service_healthy
+                required: true
+            big-bear-nextcloud-smb-redis:
+                condition: service_healthy
+                required: true
+        deploy:
+            resources:
+                limits:
+                    memory: "8454668288"
+        entrypoint:
+            - /cron.sh
+        hostname: big-bear-nextcloud-smb-cron
+        image: bigbeartechworld/big-bear-nextcloud-with-smbclient:32.0.3
+        labels:
+            icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/nextcloud.png
+        networks:
+            big_bear_nextcloud_network: null
+        restart: unless-stopped
+        volumes:
+            - type: bind
+              source: /DATA/AppData/big-bear-nextcloud-smb/html
+              target: /var/www/html
+              bind:
+                create_host_path: true
+    big-bear-nextcloud-smb-db:
+        cpu_shares: 90
+        command: []
+        container_name: big-bear-nextcloud-smb-db
+        deploy:
+            resources:
+                limits:
+                    memory: "8454668288"
+        environment:
+            POSTGRES_DB: nextcloud
+            POSTGRES_PASSWORD: casaos
+            POSTGRES_USER: casaos
+        hostname: big-bear-nextcloud-smb-db
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - pg_isready -U casaos -d nextcloud
+            timeout: 5s
+            interval: 10s
+            retries: 5
+        image: postgres:14.2
+        labels:
+            icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/nextcloud.png
+        networks:
+            big_bear_nextcloud_network: null
+        restart: unless-stopped
+        volumes:
+            - type: bind
+              source: /DATA/AppData/big-bear-nextcloud-smb/pgdata
+              target: /var/lib/postgresql/data
+              bind:
+                create_host_path: true
+    big-bear-nextcloud-smb-redis:
+        cpu_shares: 90
+        command: []
+        container_name: big-bear-nextcloud-smb-redis
+        deploy:
+            resources:
+                limits:
+                    memory: "8454668288"
+        hostname: big-bear-nextcloud-smb-redis
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - redis-cli ping || exit 1
+            timeout: 5s
+            interval: 10s
+            retries: 5
+        image: redis:6.2.20@sha256:d06ff6ec778c7f2a5c0dfaf58141d598efaa50a89d0e966faedfdf122cef451b
+        labels:
+            icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/nextcloud.png
+        networks:
+            big_bear_nextcloud_network: null
+        restart: unless-stopped
+        user: 1000:1000
+        volumes:
+            - type: bind
+              source: /DATA/AppData/big-bear-nextcloud-smb/redis
+              target: /data
+              bind:
+                create_host_path: true
+networks:
+    big_bear_nextcloud_network:
+        name: big-bear-nextcloud-smb_big_bear_nextcloud_network
+        driver: bridge
+    default:
+        name: big-bear-nextcloud-smb_default
+x-casaos:
+    architectures:
+        - amd64
+        - arm64
+    author: BigBearTechWorld
+    category: BigBearCasaOS
+    description:
+        en_us: This is legacy and you should use the BigBearCasaOS Nextcloud instead. Nextcloud puts your data at your fingertips, under your control. Store your documents, calendar, contacts and photos on a server at home, at one of our providers or in a data center you trust.
+    developer: nextcloud
+    hostname: 192.168.2.174
+    icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/nextcloud.png
+    index: /
+    is_uncontrolled: false
+    main: big-bear-nextcloud-smb
+    port_map: "7580"
+    scheme: http
+    screenshot_link:
+        - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Nextcloud/screenshot-1.png
+        - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Nextcloud/screenshot-2.png
+        - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Nextcloud/screenshot-3.png
+    store_app_id: big-bear-nextcloud-smb
+    tagline:
+        en_us: The productivity platform that keeps you in control
+    thumbnail: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Nextcloud/thumbnail.jpg
+    tips:
+        before_install:
+            en_us: |
+                Read the [Nextcloud installation guide](https://community.bigbeartechworld.com/t/added-nextcloud-to-bigbearcasaos/455?u=dragonfire1119)
+    title:
+        custom: ""
+        en_us: Nextcloud with SMB (Legacy)
